@@ -1,4 +1,5 @@
 # Python Automation Script 
+# Still a work in progress. Any feedback is appreciated
 The aim of this script is to eliminate the need for manual testing.
 
 This script will take the data from your .json file, send requests to the appropriate endpoints with the data, store the responses, and compare the data to show changes.  
@@ -8,7 +9,7 @@ First, make sure that you have the correct access to the appropriate endpoints. 
 # Setup
 1. Install python3 with `yum install python3`. Verify that it installed correctly with `python3 --version`
 2. Clone this repo with `git clone https://github.com/danepedersenAWG/python_automation_script.git`
-3. run `python_automation_script`
+3. run `cd python_automation_script`
 4. run `pip3 install -r requirements.txt`
 
 # Running the script
