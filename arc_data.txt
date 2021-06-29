@@ -1,0 +1,80 @@
+Description : Dentyne Ice Spearmnt
+Size : 16 Ct
+Facility : Kansas City
+Pack : 9
+Item code : 0010000
+Case Price : $7.34
+Unit UPC : 00001254631501
+City Srp : $1.19
+Case UPC : 00001254631500
+Gross Profit : 31%
+Compressed UPC : 00000000
+Sell @ Weight : 
+Retail Department : Grocery - Dry
+Status : 
+Category : Candy & Gum
+Setup Date : 11/08/2011
+Sub-Category : Chewing Gum
+Discontinued Date : 06/19/2020
+Buyer # : 022
+Item Substitution Type : 
+Buyer Name : Torset, Gena
+Substitution Item Code : 0000000
+Availability : 
+Whse Pallet Quantity : 378
+Next Available date : 
+Logical Order Qty(LOQ) : 1
+Item Store Shelf Life : 60
+Current Inventory : 0
+Last Week : 0
+2 Weeks Ago : 0
+3 Weeks Ago : 0
+4 Weeks Ago : 0
+5 Weeks Ago : 0
+6 Weeks Ago : 0
+This Week : 0
+ : 
+ : 
+ : 
+Total, All On-Order Qty : 0
+Vendor Lead-time : 7
+Description : Dentyne Ice Spearmnt
+Size : 16 Ct
+Facility : Nebraska
+Pack : 9
+Item code : 0010000
+Case Price : $7.34
+Unit UPC : 00001254631501
+City Srp : $1.19
+Case UPC : 00001254631500
+Gross Profit : 31%
+Compressed UPC : 00000000
+Sell @ Weight : 
+Retail Department : Grocery - Dry
+Status : 
+Category : Candy & Gum
+Setup Date : 08/26/2016
+Sub-Category : Chewing Gum
+Discontinued Date : 04/15/2021
+Buyer # : 142
+Item Substitution Type : 
+Buyer Name : Michaelis, Jessica
+Substitution Item Code : 0000000
+Availability : 
+Whse Pallet Quantity : 33
+Next Available date : 
+Logical Order Qty(LOQ) : 1
+Item Store Shelf Life : 60
+Current Inventory : 0
+Last Week : 0
+2 Weeks Ago : 0
+3 Weeks Ago : 0
+4 Weeks Ago : 0
+5 Weeks Ago : 0
+6 Weeks Ago : 0
+This Week : 0
+ : 
+ : 
+ : 
+Total, All On-Order Qty : 0
+Vendor Lead-time : 8
