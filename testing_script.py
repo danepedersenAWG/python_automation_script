@@ -5,21 +5,67 @@ import copy
 from copy import deepcopy
 from bs4 import BeautifulSoup
 
+import create_connection 
+
+
 
 # Show instructions to user, define variables, and store user input. 
 def user_prompt():
-    try:
-        os.remove('arc_data.txt')
-        os.remove('sfapi_data.txt')
-    except OSError:
-        pass
-    count = 0
+    json_files = []
+    db_files = []
     for file in os.listdir(os.curdir):
+        if file.endswith('db'):
+            db_files.append(file)
         if file.endswith('.json'):
-            count += 1 
-            read_json(file)
-    if count == 0:
-        print('Please make sure that you have a .json file in this directory')
+            json_files.append(file)
+        
+    if len(db_files) == 0:
+        if len(json_files) == 0:
+            print('********************')
+            print('No .json file found')
+            print('********************')
+            print('')
+            print('Please make sure that you have a .json file in this directory')
+        else:
+            read_json(json_files[0])
+    else:
+        if len(json_files) == 0:
+            print('********************')
+            print('No .json file found')
+            print('********************')
+            print('')
+            print('Please make sure that you have a .json file in this directory')
+        else:
+            print('')
+            print('')
+            print('')
+            print('***********************************************************')
+            print('It looks like you already have a database in this directory.')
+            print('***********************************************************')
+            print('')
+            print('Enter [1] to print all rows from db')
+            print('')
+            print('Enter [2] to overwrite db')
+            print('')
+            ui = input('1 or 2: ')
+            if str(ui) == str(1):
+                print('')
+                print('Analyzing {0}...'.format(db_files[0]))
+                print('')
+                conn = create_connection.create_connection(db_files[0])
+                create_connection.select_all_data(conn)
+
+            elif str(ui) == str(2):
+                os.remove(db_files[0])
+                print('')
+                print('Parsing {0}...'.format(json_files[0]))
+                print('')
+                read_json(json_files[0])
+            else:
+                user_prompt()
+
+
+
     
 
 
@@ -29,6 +75,7 @@ def compare_arc_and_dev(f, i):
     session_requests = requests.session()
     facilities_length = len(f)
     items_length = len(i)
+    
     # get arc credentials so mine aren't exposed
     user_name = input('Username for Arc: ')
     password = input('Password for Arc : ')
@@ -37,43 +84,36 @@ def compare_arc_and_dev(f, i):
     arc_session = session_requests.get(base_arc_qa)
     # check if status code is 200
     if(arc_session.ok):
+        create_connection.create_db()
+        database = './sqlite.db'
+        conn = create_connection.create_connection(database)
         x = 0
-        while x < 2:
-            # post_dev() returns a json object 
-            # we can pull keys out of it, place them into new dictionary, format with arc data, and compare
+        #don'twant to flood with requests during dev
+        while x < facilities_length:
+        #while x < 3:
+            # get post response json
             post_dev_json_res = post_dev(f[x], i[x])
+            #format an empty json object like the post response
             arc_data_to_compare = format_arc_json(post_dev_json_res)
-            print(arc_data_to_compare)
-            #arc_item_url = base_arc_qa+'gen/ItemQueryServlet?facility=00&itemCode=0034458&tableTarget=&pageName=ItemQueryResultSet'
+            # get actual arc_data
             arc_item_url = '{0}gen/ItemQueryServlet?facility={1}&itemCode={2}&tableTarget=&pageName=ItemQueryResultSet'.format(base_arc_qa, f[x], i[x])
             page = session_requests.get(str(arc_item_url))
             soup = BeautifulSoup(page.content, 'html.parser')
             tds = soup.find_all('td')
             tds_len = len(tds)
-            if(tds_len > 0): 
-                with open("arc_data.txt","a") as text_file:
-                    z = 0
-                    # 56 
-                    while z < 56:
-                        text_file.write("%s : %s\n" % (tds[z].text.strip(), tds[z + 1].text.strip())) 
-                        z+=2
-                    
-                    # facility past movement
-                    week_order_indexes = {60,64,68,72,76,80,84}
-                    for num in week_order_indexes:
-                        name = num - 1
-                        text_file.write("%s : %s\n" % (tds[name].text.strip(), tds[num].text.strip()))
-
-                    purchase_order_indexes = {66,70,74,78,86}
-                    for purchases in purchase_order_indexes:
-                        name = purchases - 1
-                        text_file.write("%s : %s\n" % (tds[name].text.strip(), tds[purchases].text.strip()))
-
+            # 56
+            if(tds_len > 0):
+                try: 
+                    with conn:
+                        create_connection.add_all_data(conn, post_dev_json_res, arc_data_to_compare, tds)
+                except:
+                    print('There was an error saving the data to the database')
             x += 1
-        print('arc_data.txt has been created')
+        print('Arc Data and API Data have been added to "sqlite.db" for storage and easy of use')
     else:
-        print(arc.status_code)
         print('Please check your username and password and try again')
+        print(arc.status_code)
+        
 
     
     return(f)
@@ -116,8 +156,10 @@ def post_dev(f, i):
 def format_arc_json(post_dev_json_res):
     arc_data_to_compare = dict.fromkeys(post_dev_json_res)
     for key,value in post_dev_json_res.items():
-        if(str(key) == 'FCLTY_CD' or str(key) == 'ITEM_CD'):
-            pass
+        if(str(key) == 'FCLTY_CD'):
+            arc_data_to_compare[key] = deepcopy(post_dev_json_res[key])
+        elif(str(key) == 'ITEM_CD'):
+            arc_data_to_compare[key] = deepcopy(post_dev_json_res[key])
         elif(str(key) == 'Main'):
             arc_data_to_compare[key] = dict.fromkeys(post_dev_json_res[key].keys())
             for key2,value2 in post_dev_json_res[key].items():
@@ -128,7 +170,6 @@ def format_arc_json(post_dev_json_res):
                         mvmnt = deepcopy(i)
                         mvmnt['PAST_WKS_QTY_SHP'] = 'CHANGE'
                         arc_data_to_compare[key][key2].append(mvmnt)
-                        print(i)
                     
         elif(str(key) == 'Shipper_Comp'):
             if(len(post_dev_json_res[key]) > 0):
@@ -151,10 +192,6 @@ def format_arc_json(post_dev_json_res):
                 dpcopy = deepcopy(post_dev_json_res[key])
                 arc_data_to_compare[key] = dpcopy
     return arc_data_to_compare
-
-    
-    
-    
 
 
 # Heavy lifting function 
@@ -187,6 +224,7 @@ def read_json(user_file):
         print(err)
 
     
+
     
 
 user_prompt()

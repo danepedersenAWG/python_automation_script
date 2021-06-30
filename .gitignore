@@ -1,1 +1,3 @@
-./scratch.py
+shell_template.py
+__pycache__
+sqlite.db
