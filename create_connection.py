@@ -252,21 +252,25 @@ def add_all_data(conn, post_dev_json_res, arc_data_to_compare, tds):
     dev_data.append(dev_main['ITEM_MVNT'][2]['PAST_WKS_QTY_SHP'])
     create_row(conn, dev_data)
 
-def select_all_data(conn):
+def select_all_arc_data(conn):
     """
     Return all records
     :param conn:
     """       
     cur = conn.cursor()
-    cur.execute("SELECT * FROM arc_and_dev_data;")
+    cur.execute("SELECT * FROM arc_and_dev_data WHERE arc_or_dev IS 'a';")
     rows = cur.fetchall()
-    for row in rows:
-        print(row)
+    return rows
     
-
-
-
-
+def select_all_dev_data(conn):
+    """
+    Return all records
+    :param conn:
+    """       
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM arc_and_dev_data WHERE arc_or_dev IS 'd';")
+    rows = cur.fetchall()
+    return rows
 
 if __name__ == '__main__':
     create_db()

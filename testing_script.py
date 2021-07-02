@@ -11,6 +11,10 @@ import create_connection
 
 # Show instructions to user, define variables, and store user input. 
 def user_prompt():
+    try:
+        os.remove('results.txt')
+    except:
+        pass
     json_files = []
     db_files = []
     for file in os.listdir(os.curdir):
@@ -18,7 +22,6 @@ def user_prompt():
             db_files.append(file)
         if file.endswith('.json'):
             json_files.append(file)
-        
     if len(db_files) == 0:
         if len(json_files) == 0:
             print('********************')
@@ -52,9 +55,8 @@ def user_prompt():
                 print('')
                 print('Analyzing {0}...'.format(db_files[0]))
                 print('')
-                conn = create_connection.create_connection(db_files[0])
-                create_connection.select_all_data(conn)
-
+                analyze_data(db_files)
+                
             elif str(ui) == str(2):
                 os.remove(db_files[0])
                 print('')
@@ -64,11 +66,23 @@ def user_prompt():
             else:
                 user_prompt()
 
-
-
+def analyze_data(db_files):
+    conn = create_connection.create_connection(db_files[0])
+    arc_sql_data = create_connection.select_all_arc_data(conn)
+    dev_sql_data = create_connection.select_all_dev_data(conn)
+    name_dict = get_name_dictionary()
+    print(len(name_dict))
     
-
-
+    with open('results.txt', 'a') as file:  
+        x = 0
+        
+        while x < len(arc_sql_data):
+            y = 0
+            while y < len(arc_sql_data[x]):
+                file.write('{0}\ndev_sql_data: {1}     |      arc_sql_data: {2}\n\n'.format(name_dict[y],dev_sql_data[x][y],arc_sql_data[x][y]))
+                y += 1
+            x += 1
+            
 # Get Arcqa results and dev results and format them accordingly
 def compare_arc_and_dev(f, i):
     # create session so we don't have to login on every request
@@ -97,6 +111,7 @@ def compare_arc_and_dev(f, i):
             arc_data_to_compare = format_arc_json(post_dev_json_res)
             # get actual arc_data
             arc_item_url = '{0}gen/ItemQueryServlet?facility={1}&itemCode={2}&tableTarget=&pageName=ItemQueryResultSet'.format(base_arc_qa, f[x], i[x])
+            arc_history url = '{0}gen/ItemQueryServlet?facility={1}&itemCode={2}&tableTarget=history'.format(base_arc_qa,f[x],i[x])
             page = session_requests.get(str(arc_item_url))
             soup = BeautifulSoup(page.content, 'html.parser')
             tds = soup.find_all('td')
@@ -114,12 +129,8 @@ def compare_arc_and_dev(f, i):
         print('Please check your username and password and try again')
         print(arc.status_code)
         
-
-    
     return(f)
     
-
-
 # Post to dev enpoints, and return data to be compared
 def post_dev(f, i):
     session_requests = requests.session()
@@ -150,8 +161,7 @@ def post_dev(f, i):
         return json_sf_dev_res['data']
     else:
         print('There was a {0} error when attempting to post to "{1}" with the data {2}'.format(response.status_code, item_detail_end, d))
-        
-        
+         
 # Function to take the sfdev response, and format an arc json string using it
 def format_arc_json(post_dev_json_res):
     arc_data_to_compare = dict.fromkeys(post_dev_json_res)
@@ -193,6 +203,72 @@ def format_arc_json(post_dev_json_res):
                 arc_data_to_compare[key] = dpcopy
     return arc_data_to_compare
 
+# get dictionary of names to use in other functions
+def get_name_dictionary():
+    name_dict = [
+        'id',
+        'arc_or_dev',
+        'FCLTY_CD',
+        'ITEM_CD',
+        'ITEM_LONG_NM',
+        'RTL_UNIT_SIZE_DS',
+        'BSP_CRNT_AM',
+        'ITEM_UPC_CD',
+        'CASE_UPC_CD',
+        'RTL_CITY_CRNT_GRS_PRFT_PC',
+        'RTL_RRL_CRNT_GRS_PRFT_PC',
+        'SELL_AT_WGT',
+        'INVNTRY_DPRTMNT_CD',
+        'ITEM_STATUS',
+        'CTGRY_NB',
+        'ITEM_STP_DT',
+        'DSCNTND_DT',
+        'BUY_NAM',
+        'AWG_SBSTTTN_ITEM_CD',
+        'WRHS_PALLET_QT',
+        'LGCL_ORDR_QT',
+        'CURRENT_INVENTORY',
+        'GRP_LED_TM',
+        'WRHS_CD',
+        'ITM_DSC',
+        'BRND_NAME_DS',
+        'STR_PACK_QT',
+        'MSTR_PACK_QT',
+        'SBSTTTN_ITEM_TYPE_CD',
+        'RTL_CITY_CRNT_AM',
+        'RTL_RRL_CRNT_AM',
+        'INNER_PACK_CD',
+        'ITEM_UPC_CMPRSD_CD',
+        'RCLMTN_ELGBL_FL',
+        'PRCHS_VNDR_DS',
+        'POS_SPCL_ATHRZTN_FL',
+        'RTL_UNT_INR_CSE',
+        'SUB_CTGRY_NB',
+        'CTGRY_MNGR_CD',
+        'BUY_EMAIL',
+        'BUY_TEL_NBR',
+        'CAT_MGR_NAM',
+        'CAT_MGR_EMAIL',
+        'CAT_MGR_TEL_NBR',
+        'NEXT_AVLBL_DT',
+        'HZRDS_MTRL_CD',
+        'CNTRY_OF_ORGN_DS',
+        'ITEM_RNKNG_NB',
+        'NMBR_ITEM_RNKNG_QT',
+        'UNIQUE_GROUPING_NBR',
+        'UNIQUE_GROUPING_DESC',
+        'ONE_WEEK_MVMNT_START_DT',
+        'ONE_WEEK_MVMNT_END_DT',
+        'ONE_WEEK_MVMNT_PAST_WKS_QTY_SHP',
+        'TWO_WEEK_MVMNT_START_DT',
+        'TWO_WEEK_MVMNT_END_DT',
+        'TWO_WEEK_MVMNT_PAST_WKS_QTY_SHP',
+        'SIX_MONTH_AVG_MVMNT_START_DT',
+        'SIX_MONTH_AVG_MVMNT_END_DT',
+        'SIX_MONTH_AVG_MVMNT_PAST_WKS_QTY_SHP'
+    ]
+    
+    return name_dict
 
 # Heavy lifting function 
 def read_json(user_file):
@@ -222,10 +298,6 @@ def read_json(user_file):
 
     except (RuntimeError, TypeError, NameError) as err:
         print(err)
-
-    
-
-    
 
 user_prompt()
 
