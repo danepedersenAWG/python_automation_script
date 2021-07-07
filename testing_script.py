@@ -6,6 +6,7 @@ from copy import deepcopy
 from bs4 import BeautifulSoup
 # database interaction file
 import create_connection 
+import getpass
 
 
 
@@ -92,7 +93,7 @@ def compare_arc_and_dev(f, i):
     
     # get arc credentials so mine aren't exposed
     user_name = input('Username for Arc: ')
-    password = input('Password for Arc : ')
+    password = getpass.getpass('Password for Arc: ')
     # arcqa uses a modal login, so we can get around this by passing credentials to the url 
     base_arc_qa = 'https://{0}:{1}@appqa.awginc.com/app/arc/'.format(user_name.strip(), password.strip())
     arc_session = session_requests.get(base_arc_qa)
@@ -111,7 +112,7 @@ def compare_arc_and_dev(f, i):
             arc_data_to_compare = format_arc_json(post_dev_json_res)
             # get actual arc_data
             arc_item_url = '{0}gen/ItemQueryServlet?facility={1}&itemCode={2}&tableTarget=&pageName=ItemQueryResultSet'.format(base_arc_qa, f[x], i[x])
-            arc_history url = '{0}gen/ItemQueryServlet?facility={1}&itemCode={2}&tableTarget=history'.format(base_arc_qa,f[x],i[x])
+            #arc_history url = '{0}gen/ItemQueryServlet?facility={1}&itemCode={2}&tableTarget=history'.format(base_arc_qa,f[x],i[x])
             page = session_requests.get(str(arc_item_url))
             soup = BeautifulSoup(page.content, 'html.parser')
             tds = soup.find_all('td')
@@ -158,6 +159,7 @@ def post_dev(f, i):
     if(response.ok):
         sf_dev_res = response.content
         json_sf_dev_res = json.loads(sf_dev_res)
+        print(json_sf_dev_res)
         return json_sf_dev_res['data']
     else:
         print('There was a {0} error when attempting to post to "{1}" with the data {2}'.format(response.status_code, item_detail_end, d))
